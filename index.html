@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Вішлист на День Народження</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        h1 {
+            color: #764ba2;
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 25px;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            border-radius: 50px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        button.secondary {
+            background: white;
+            color: #764ba2;
+            border: 2px solid #764ba2;
+        }
+
+        .wish-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .wish-card {
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .wish-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.2);
+        }
+
+        .wish-card.reserved {
+            opacity: 0.9;
+            background: #f9f9f9;
+        }
+
+        .wish-card.reserved::before {
+            content: "❌ ЗАБРОНЬОВАНО";
+            position: absolute;
+            top: 20px;
+            right: -35px;
+            background: #ff4757;
+            color: white;
+            padding: 8px 40px;
+            transform: rotate(45deg);
+            font-size: 0.9em;
+            font-weight: bold;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .wish-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 4em;
+        }
+
+        .wish-content {
+            padding: 25px;
+        }
+
+        .wish-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .wish-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .wish-price {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #764ba2;
+            margin-bottom: 20px;
+        }
+
+        .reserve-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .reserve-btn.available {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .reserve-btn.reserved {
+            background: #ddd;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .reserve-btn.mine {
+            background: #00d09c;
+            color: white;
+        }
+
+        .reserved-info {
+            text-align: center;
+            margin-top: 12px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        .username {
+            font-weight: bold;
+            color: #764ba2;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            max-width: 450px;
+            width: 90%;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #764ba2;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 15px;
+            font-size: 1em;
+        }
+
+        .form-group input:focus {
+            border-color: #764ba2;
+            outline: none;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            display: none;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .admin-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎂 Список бажань 🎂</h1>
+            <p class="subtitle">Обери подарунок, який хочеш подарувати</p>
+            
+            <div class="auth-buttons" id="authSection">
+                <!-- Авторизація буде тут через JavaScript -->
+            </div>
+        </header>
+
+        <div class="wish-grid" id="wishlist">
+            <!-- Подарунки будуть тут через JavaScript -->
+        </div>
+        
+        <footer>
+            <p>Зроблено з любов'ю ✨</p>
+        </footer>
+    </div>
+
+    <!-- Модальне вікно логіну -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('loginModal')">&times;</span>
+            <h2 style="color: #764ba2; margin-bottom: 20px;">Вхід</h2>
+            <div id="loginAlert" class="alert"></div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Ім'я користувача</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" style="width: 100%;">Увійти</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальне вікно реєстрації -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('registerModal')">&times;</span>
+            <h2 style="color: #764ba2; margin-bottom: 20px;">Реєстрація</h2>
+            <div id="registerAlert" class="alert"></div>
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Ім'я користувача</label>
+                    <input type="text" id="regUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="regEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="regPassword" required>
+                </div>
+                <button type="submit" style="width: 100%;">Зареєструватися</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальне вікно додавання подарунка -->
+    <div id="addItemModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addItemModal')">&times;</span>
+            <h2 style="color: #764ba2; margin-bottom: 20px;">Додати подарунок</h2>
+            <div id="addItemAlert" class="alert"></div>
+            <form id="addItemForm" onsubmit="handleAddItem(event)">
+                <div class="form-group">
+                    <label>Назва подарунка</label>
+                    <input type="text" id="itemTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Опис</label>
+                    <textarea id="itemDescription" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Ціна (грн)</label>
+                    <input type="number" id="itemPrice" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>URL зображення</label>
+                    <input type="url" id="itemImage">
+                </div>
+                <button type="submit" style="width: 100%;">Додати</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ==================== ДАНІ ====================
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let gifts = JSON.parse(localStorage.getItem('gifts')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+
+        // Початкові подарунки, якщо немає
+        if (gifts.length === 0) {
+            gifts = [
+                {
+                    id: 1,
+                    title: 'Парфуми Dolce & Gabbana Light Blue',
+                    description: 'Жіночі парфуми, 100 мл. Свіжий аромат з нотками яблука та лимона.',
+                    price: 2800,
+                    image: 'https://content1.rozetka.com.ua/goods/images/big/294629320.jpg',
+                    reserved: false,
+                    reservedBy: null
+                },
+                {
+                    id: 2,
+                    title: 'Apple Watch SE 40mm',
+                    description: 'Смарт-годинник, GPS, космічний сірий.',
+                    price: 12500,
+                    image: 'https://content2.rozetka.com.ua/goods/images/big/238050398.jpg',
+                    reserved: false,
+                    reservedBy: null
+                },
+                {
+                    id: 3,
+                    title: 'Книга "Солодка сіль"',
+                    description: 'Роман української письменниці.',
+                    price: 450,
+                    image: 'https://book-ye.com.ua/upload/iblock/4f3/4f31d0b76fa5b8a6e6b8d7c9e9a8b3c2.jpg',
+                    reserved: false,
+                    reservedBy: null
+                },
+                {
+                    id: 4,
+                    title: 'Набір косметики Lush',
+                    description: 'Бомбочки для ванни, мило ручної роботи.',
+                    price: 1200,
+                    image: 'https://lush.ua/cdn/shop/files/OP-2022-1280x1650-GIFTS_05_1200x.jpg',
+                    reserved: false,
+                    reservedBy: null
+                },
+                {
+                    id: 5,
+                    title: 'Кавоварка DeLonghi',
+                    description: 'Капсульна кавоварка, компактна.',
+                    price: 3500,
+                    image: 'https://content1.rozetka.com.ua/goods/images/big/137686147.jpg',
+                    reserved: false,
+                    reservedBy: null
+                },
+                {
+                    id: 6,
+                    title: 'Сертифікат в SPA',
+                    description: 'На 2 години: масаж, джакузі.',
+                    price: 1800,
+                    image: 'https://apostrophe.ua/uploads/image/4a82d090e2b23b653981d6dbe2c5c1fa.jpg',
+                    reserved: false,
+                    reservedBy: null
+                }
+            ];
+            saveGifts();
+        }
+
+        // ==================== ЗБЕРЕЖЕННЯ ====================
+        function saveUsers() {
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        function saveGifts() {
+            localStorage.setItem('gifts', JSON.stringify(gifts));
+        }
+
+        function saveCurrentUser() {
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        }
+
+        // ==================== ВІДОБРАЖЕННЯ ====================
+        function render() {
+            renderAuth();
+            renderGifts();
+        }
+
+        function renderAuth() {
+            const authSection = document.getElementById('authSection');
+            
+            if (currentUser) {
+                authSection.innerHTML = `
+                    <span>Привіт, <span class="username">${currentUser.username}</span>! 👋</span>
+                    <button onclick="logout()" class="secondary">Вийти</button>
+                    ${currentUser.isAdmin ? '<button onclick="showAddItemModal()">+ Додати подарунок</button>' : ''}
+                `;
+            } else {
+                authSection.innerHTML = `
+                    <button onclick="showLoginModal()">Увійти</button>
+                    <button onclick="showRegisterModal()" class="secondary">Зареєструватися</button>
+                `;
+            }
+        }
+
+        function renderGifts() {
+            const wishlist = document.getElementById('wishlist');
+            wishlist.innerHTML = '';
+
+            gifts.forEach(gift => {
+                const card = document.createElement('div');
+                card.className = `wish-card ${gift.reserved ? 'reserved' : ''}`;
+
+                const reservedByUser = gift.reservedBy ? users.find(u => u.id === gift.reservedBy) : null;
+
+                card.innerHTML = `
+                    <img src="${gift.image || 'https://via.placeholder.com/300x200?text=🎁'}" 
+                         class="wish-image" 
+                         onerror="this.src='https://via.placeholder.com/300x200?text=🎁'">
+                    
+                    <div class="wish-content">
+                        <h3 class="wish-title">${gift.title}</h3>
+                        <p class="wish-description">${gift.description || ''}</p>
+                        <div class="wish-price">${gift.price || '?'} грн</div>
+                        
+                        ${renderButton(gift, reservedByUser)}
+                    </div>
+                `;
+                wishlist.appendChild(card);
+            });
+        }
+
+        function renderButton(gift, reservedByUser) {
+            if (!currentUser) {
+                return `<button class="reserve-btn available" onclick="showLoginModal()">Увійдіть, щоб обрати</button>`;
+            }
+
+            if (gift.reserved) {
+                if (gift.reservedBy === currentUser.id) {
+                    return `<button class="reserve-btn mine" onclick="unreserveItem(${gift.id})">✅ Ви обрали це!</button>`;
+                } else {
+                    return `
+                        <button class="reserve-btn reserved" disabled>❌ Заброньовано</button>
+                        ${reservedByUser ? `<div class="reserved-info">Обрала: <strong>${reservedByUser.username}</strong></div>` : ''}
+                    `;
+                }
+            } else {
+                return `<button class="reserve-btn available" onclick="reserveItem(${gift.id})">🎁 Обрати подарунок</button>`;
+            }
+        }
+
+        // ==================== АВТОРИЗАЦІЯ ====================
+        function showLoginModal() {
+            document.getElementById('loginModal').classList.add('active');
+            document.getElementById('loginAlert').style.display = 'none';
+        }
+
+        function showRegisterModal() {
+            document.getElementById('registerModal').classList.add('active');
+            document.getElementById('registerAlert').style.display = 'none';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                saveCurrentUser();
+                closeModal('loginModal');
+                render();
+            } else {
+                const alert = document.getElementById('loginAlert');
+                alert.className = 'alert error';
+                alert.textContent = 'Невірний логін або пароль';
+                alert.style.display = 'block';
+            }
+        }
+
+        function handleRegister(event) {
+            event.preventDefault();
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            if (users.some(u => u.username === username)) {
+                const alert = document.getElementById('registerAlert');
+                alert.className = 'alert error';
+                alert.textContent = 'Користувач вже існує';
+                alert.style.display = 'block';
+                return;
+            }
+
+            const newUser = {
+                id: Date.now(),
+                username,
+                email,
+                password,
+                isAdmin: users.length === 0 // Перший користувач - адмін
+            };
+
+            users.push(newUser);
+            saveUsers();
+            
+            currentUser = newUser;
+            saveCurrentUser();
+            
+            closeModal('registerModal');
+            render();
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            render();
+        }
+
+        // ==================== ПОДАРУНКИ ====================
+        function reserveItem(id) {
+            const gift = gifts.find(g => g.id === id);
+            if (gift && !gift.reserved) {
+                gift.reserved = true;
+                gift.reservedBy = currentUser.id;
+                saveGifts();
+                render();
+                alert('✅ Ви обрали подарунок!');
+            }
+        }
+
+        function unreserveItem(id) {
+            const gift = gifts.find(g => g.id === id);
+            if (gift && (gift.reservedBy === currentUser.id || currentUser.isAdmin)) {
+                gift.reserved = false;
+                gift.reservedBy = null;
+                saveGifts();
+                render();
+                alert('✅ Бронювання скасовано');
+            }
+        }
+
+        function showAddItemModal() {
+            if (!currentUser?.isAdmin) {
+                alert('Доступ заборонено');
+                return;
+            }
+            document.getElementById('addItemModal').classList.add('active');
+            document.getElementById('addItemAlert').style.display = 'none';
+        }
+
+        function handleAddItem(event) {
+            event.preventDefault();
+
+            if (!currentUser?.isAdmin) {
+                alert('Доступ заборонено');
+                return;
+            }
+
+            const title = document.getElementById('itemTitle').value;
+            if (!title) {
+                const alert = document.getElementById('addItemAlert');
+                alert.className = 'alert error';
+                alert.textContent = 'Назва обов\'язкова';
+                alert.style.display = 'block';
+                return;
+            }
+
+            const newGift = {
+                id: Date.now(),
+                title: title,
+                description: document.getElementById('itemDescription').value,
+                price: parseFloat(document.getElementById('itemPrice').value) || null,
+                image: document.getElementById('itemImage').value,
+                reserved: false,
+                reservedBy: null
+            };
+
+            gifts.push(newGift);
+            saveGifts();
+
+            document.getElementById('addItemForm').reset();
+            
+            const alert = document.getElementById('addItemAlert');
+            alert.className = 'alert success';
+            alert.textContent = 'Подарунок додано!';
+            alert.style.display = 'block';
+
+            setTimeout(() => {
+                closeModal('addItemModal');
+                render();
+            }, 1500);
+        }
+
+        // ==================== ІНІЦІАЛІЗАЦІЯ ====================
+        window.onload = function() {
+            render();
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
